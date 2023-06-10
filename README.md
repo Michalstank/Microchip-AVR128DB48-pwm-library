@@ -4,6 +4,8 @@ This repository hosts a PWM Library for the card AVR128DB48, it is primaly based
 
 # Documentation
 
+Summary:
+
 An overview over the functionality of the library
 
 ## Which peripherals are covered
