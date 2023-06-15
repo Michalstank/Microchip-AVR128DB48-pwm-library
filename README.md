@@ -10,17 +10,14 @@ An overview over the functionality of the library.
 
 ## Which peripherals are covered
 
-```
-Single & Split Mode:
-  TCA0
-  TCA1
-Pulse Width Measurement:
-  TCB0
-  TCB1
-EVSYS
-
-
-```
+|Peripheral|Covered Funcionality|
+|----------|--------------------|
+|TCA0|e|
+|TCA1|e|
+|TCB0|e|
+|TCB1|e|
+|EVSYS|e|
+|PORTMUX|e|
 
 ## How to use the Library
 
