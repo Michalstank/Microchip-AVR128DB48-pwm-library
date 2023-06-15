@@ -12,12 +12,11 @@ An overview over the functionality of the library.
 
 |Peripheral|Covered Funcionality|
 |----------|--------------------|
-|TCA0|e|
-|TCA1|e|
-|TCB0|e|
-|TCB1|e|
-|EVSYS|e|
-|PORTMUX|e|
+|TCA0|Dual Slope, Single Mode|
+|TCA1|Dual Slope, Single Mode|
+|TCB0|Pulse Width Measurement|
+|EVSYS|Integration with TCB0 for PWM, Uses Channel 0|
+|PORTMUX|Waveform Output setup for TCA0 & TCA1|
 
 ## How to use the Library
 
