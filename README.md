@@ -6,7 +6,7 @@ This repository hosts a PWM Library for the card AVR128DB48, it is primaly based
 
 Summary:
 
-An overview over the functionality of the library.
+This is an Library for the card AVR128DB48 with main focus on the PWM Generation as well as Measurement. The Library was made in such a way that it would be easy to use for both new and advanced users. It mainly focuses on simplification of existing peripherals for both streamlined and quick way of setting them up.
 
 ## Which peripherals are covered
 
@@ -55,4 +55,12 @@ return 0;
 WIP
 
 ## "Register" Summary
+
+All of the "registers" are part of the main library struct which can be referred to by PWM_CTRL.
+
+List of "Registers in the library and their objectives:
+
+WIP - EXTERNAL FILE
+
+
 
