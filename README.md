@@ -10,7 +10,7 @@ An overview over the functionality of the library.
 
 ## Which peripherals are covered
 
-|Peripheral|Covered Funcionality|
+|Peripheral|Covered Functionality|
 |----------|--------------------|
 |TCA0|Dual Slope, Single Mode|
 |TCA1|Dual Slope, Single Mode|
