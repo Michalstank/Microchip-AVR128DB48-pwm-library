@@ -22,7 +22,7 @@ This is an Library for the card AVR128DB48 with main focus on the PWM Generation
 
 ## How to use the Library
 
-For the library to function download both of the PWM files and add them to the project you are working on. Therefore include the PWM.H file and configure the registers for desired results.
+For the library to function download both of the PWM files and add them to the project you are working on. Therefore include the PWM.H file and configure the registers for desired results. Lastly call the `PWM_INIT()` function before the `while(1)` loop and `PWM_RUN()` at the start of the `while(1)` loop (**DO NOT USE OTHER FUNCTIONS FROM THE LIBRARY**)
 
 ## Example Initialization
 
