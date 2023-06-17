@@ -1,7 +1,14 @@
 #pragma once
 
+/*
+	NAME: MICROCHIP-AVR128DB48-PWM-LIBRARY
+	AUTHOR: MICHALSTANK
+	VERSION: 0.5.0
+*/
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 typedef uint8_t BITMASK;
 
@@ -24,11 +31,15 @@ typedef uint8_t BITMASK;
 #define	PWM_TCA1_CMP_2_bm			0b01000000
 
 //FUNCTION POINTERS
-typedef uint8_t (*GET_DUTYCYCLE)(uint8_t fanNr);
-typedef void (*SET_DUTYCYCLE)(uint8_t fanNr,uint8_t newDutyCycle);
-typedef void (*PWM_RUN_PTR)();
-typedef void (*PWM_INIT_PTR)();
-typedef void (*PWM_PRELOAD_PTR)();
+typedef void (*PWM_RUN_POINTER)(void);
+
+typedef void (*TCB0_OVF_POINTER)(void);
+typedef void (*TCB0_CAPT_POINTER)(void);
+
+typedef void (*TCA0_OVF_POINTER)(void);
+typedef void (*TCA0_CMP0_POINTER)(void);
+typedef void (*TCA0_CMP1_POINTER)(void);
+typedef void (*TCA0_CMP2_POINTER)(void);
 
 //STORAGE STRUCT USED FOR DATALOGGING
 struct PWM_DATA{
@@ -76,20 +87,26 @@ struct PWM_CONTROLLER{
 	volatile struct PWM_DATA DATALOG[96];
 	//LIBRARY INTERNAL MEMORY FOR DATASAVING
 	
-	SET_DUTYCYCLE SET_DUTYCYCLE; 
-	//FUNCTION POINTER TO SETING FOR SETING THE DUTYCYCLE
+	//Function Pointer to PWM_RUN in case the user wants to write their own.
+	PWM_RUN_POINTER PWM_RUN_fp;
+		
+	//Function pointer for TCB0 OVF, Counter Overflow Interrupt.
+	TCB0_OVF_POINTER TCB0_OVF_INT_fp;
 	
-	GET_DUTYCYCLE GET_DUTYCYCLE;
-	//FUNCTION POINTER FOR GETTING DUTYCYCLE
+	//Function pointer for TCB0 CAPT, Event capture interrupt.
+	TCB0_CAPT_POINTER TCB0_CAPT_INT_fp;
 	
-	PWM_RUN_PTR RUN;
-	//FUNCTION POINTER TO GETING DUTYCYCLE
+	//Function Pointer for TCA0 OVF, Counter Overflow Interrupt. 
+	TCA0_OVF_POINTER TCA0_OVF_INT_fp;
 	
-	PWM_INIT_PTR PWM_INIT_F;
-	//FUNCTION POINTER TO INIT FUNCTION
+	//Function Pointer for TCA0 CMP0 Match Interrupt
+	TCA0_CMP0_POINTER TCA0_CMP0_INT_fp;
 	
-	PWM_PRELOAD_PTR PWM_PRELOAD;
-	//FUNCTION POINTER TO PRELOAD FUNCTION
+	//Function Pointer for TCA0 CMP1 Match Interrupt
+	TCA0_CMP1_POINTER TCA0_CMP1_INT_fp;
+	
+	//Function Pointer for TCA0 CMP2 Match Interrupt
+	TCA0_CMP2_POINTER TCA0_CMP2_INT_fp;
 };
 
 //initalization of ctrl for the library
@@ -99,16 +116,17 @@ struct PWM_CONTROLLER PWM_CTRL;
 
 void PWM_INIT();															//Main Init Function
 
+void TCA0_CMP_INIT();														//TCA0 Compare Channel Initialization
+void TCA0_CMP_INIT();														//TCA1 Compare Channel Initialization
+
 void TCA0_SINGLE_INIT();													//TCA0 Init Function
 void TCA1_SINGLE_INIT();													//TCA1 Init Function
 
 void TCB_INIT();															//TCB0 Init Function
 
 //FUNCTIONS
-
-uint8_t TCA_GET_DUTYCYCLE(uint8_t fanNr);									//Get duty cycle function
-void TCA_SET_DUTYCYCLE(uint8_t fanNr,uint8_t newDutyCycle);					//Set duty cycle function
 void PWM_RUN();																//'Update()' esque function
 void PWM_Preload();														
 
-void _PWM_FUNCTION_POINTER_INIT();											//Connects functions listed above to the struct
+void FP_INIT();																//Connects functions listed above to the struct
+void FP_HOLDER();															//Temporary Function for the Function Pointers, just so you dont get a NULL pointer.
