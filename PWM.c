@@ -1,54 +1,52 @@
 #include "PWM.h"
 
+/*
+	NAME: MICROCHIP-AVR128DB48-PWM-LIBRARY
+	AUTHOR: MICHALSTANK
+	VERSION: 0.5.0
+*/
+
 //Main initialization function meant to be called once
 void PWM_INIT(){
 	
 	PWM_RUN();
 	
 	if((PWM_CTRL.MAIN_CTRL & 0b00000001)){					//MAIN_CTRL INTI
+		
 		if(PWM_CTRL.MAIN_CTRL & 0b00000010){				//TCA0 ENABLE		
-			if((PWM_CTRL.CMP_CTRL & 0b00000001)){			//Enable 'compare and enable flag'(CMPn) in CTRLB register therefore enabling PWM generation.
-				TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP0BUF;
-			}
-			if(PWM_CTRL.CMP_CTRL & 0b00000010){
-				TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP1BUF;
-			}
-			if(PWM_CTRL.CMP_CTRL & 0b00000100){
-				TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP2BUF;
-			}
-			
-			PORTD.DIR = 0xFF;								//Sets port as output so the waveform function can be output
-			TCA0_SINGLE_INIT();								//Calls main initialization function
+
+			TCA0_CMP_INIT();								//Initializes the Compare Channels
+
+			TCA0_SINGLE_INIT();								//Finishes Setup of Peripheral
 		}
 		
 		if((PWM_CTRL.MAIN_CTRL & 0b00000100)){				//TCA1 ENABLE
-			if(PWM_CTRL.CMP_CTRL & 0b00010000){				//Enable 'compare and enable flag'(CMPn) in CTRLB register therefore enabling PWM generation.
-				TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP0BUF;
-			}
-			if(PWM_CTRL.CMP_CTRL & 0b00100000){
-				TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP1BUF;
-			}
-			if(PWM_CTRL.CMP_CTRL & 0b01000000){
-				TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP2BUF;
-			}
 			
-			PORTC.DIR = 0xFF;								//Sets port as output so the waveform function can be output
+			TCA1_CMP_INIT();								//Initializes the Compare Channels
+			
 			TCA1_SINGLE_INIT();								//Calls main initialization function
 		}
 		
 		if(PWM_CTRL.MAIN_CTRL & 0b00001000){				//TCB ENABLE			
 			TCB_INIT();
+			
+			//TODO EDIT:
+			
 			PORTA.IN = 0xFF;								//Enables input on pins for TCB Timer
 			PORTA.PINCONFIG = PORT_PULLUPEN_bm;
 		}
 		
 		if((PWM_CTRL.MAIN_CTRL & 0b00010000)){				//PORTMUX OVERRIDE ENABLE
 			
+			//TODO : CHANGE TO USER SELECT (MAYBE)
+			
 			//OVERRIDES pins on PORTD		and			PORTC, sets them to work as waveform output for pins W0n
 			//					TCA0					TCA1
 			PORTMUX.TCAROUTEA = PORTMUX_TCA0_PORTD_gc | PORTMUX_TCA1_PORTC_gc;
 		}
 		
+		
+		//TODO EDIT ENTIRE THING
 		if(PWM_CTRL.MAIN_CTRL & 0b00100000){				//INTERRUPT ENABLE
 			//Enables TCA0 interrupt flag.
 			TCA0.SINGLE.INTCTRL  = 0b00010000;
@@ -65,6 +63,8 @@ void PWM_INIT(){
 
 //Which operations are to be executed continuously
 void PWM_RUN(){
+	
+	//TODO : BUILD FROM SCRATCH
 	
 	if(PWM_CTRL.MAIN_CTRL & 0b00001000){ //Timer needs to be disabled and re-enabled for changes on CHANNEL0 to take effect.
 		TCB0.CTRLA ^= TCB_ENABLE_bm;
@@ -114,6 +114,11 @@ void PWM_RUN(){
 	}
 }
 
+/*
+OTHER FUNCTIONS
+#######################################################################################################
+*/
+
 //Enables Timer A0 and sets it to operate as a Pulse Width Modulation (PWM) generator.
 void TCA0_SINGLE_INIT(){
 	
@@ -159,23 +164,22 @@ void TCB_INIT(){
 	TCB0.CTRLA = TCB_ENABLE_bm | TCB_CLKSEL_TCA0_gc;										//Enables Timer and sets it to match TCA0 Timer
 }
 
-//Returns value of dutycycle at selected index
-uint8_t TCA_GET_DUTYCYCLE(uint8_t fanNr){
-	return PWM_CTRL.PWM_CMPBUF_DUTYCYCLE[fanNr];
-}
-
-//sets value of dutycycle
-void TCA_SET_DUTYCYCLE(uint8_t fanNr,uint8_t newDutyCycle){
-	PWM_CTRL.PWM_CMPBUF_DUTYCYCLE[fanNr] = newDutyCycle;
-}
-
 //FUNCITON POINTERS INIT
-void _PWM_FUNCTION_POINTER_INIT(){
-	PWM_CTRL.SET_DUTYCYCLE = &TCA_SET_DUTYCYCLE;
-	PWM_CTRL.GET_DUTYCYCLE = &TCA_GET_DUTYCYCLE;
-	PWM_CTRL.RUN = &PWM_RUN;
-	PWM_CTRL.PWM_INIT_F = &PWM_INIT;
-	PWM_CTRL.PWM_PRELOAD = &PWM_Preload;
+void FP_INIT(){
+	
+	PWM_CTRL.PWM_RUN_fp = &PWM_RUN;
+	
+	PWM_CTRL.TCB0_OVF_INT_fp = &FP_HOLDER;
+	PWM_CTRL.TCB0_CAPT_INT_fp = &FP_HOLDER;
+	
+	PWM_CTRL.TCA0_OVF_INT_fp = &FP_HOLDER;
+	PWM_CTRL.TCA0_CMP0_INT_fp = &FP_HOLDER;
+	PWM_CTRL.TCA0_CMP1_INT_fp = &FP_HOLDER;
+	PWM_CTRL.TCA0_CMP2_INT_fp = &FP_HOLDER;
+}
+
+void FP_HOLDER(){
+	return 0;
 }
 
 //stock function to load as recommended default settings
@@ -195,4 +199,86 @@ void PWM_Preload(){
 	PWM_CTRL.PWM_CMPBUF_DUTYCYCLE[5] = 0x10;
 
 	PWM_CTRL.READ_SELECT = 0x40;
+}
+
+void TCA0_CMP_INIT(){
+	
+	if(PWM_CTRL.CMP_CTRL & 0b00000001){			//Enable 'compare and enable flag'(CMPn) in CTRLB register therefore enabling PWM generation.
+		TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP0BUF;
+	}
+	
+	if(PWM_CTRL.CMP_CTRL & 0b00000010){
+		TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP1BUF;
+	}
+	
+	if(PWM_CTRL.CMP_CTRL & 0b00000100){
+		TCA0.SINGLE.CTRLB |= TCA0_SINGLE_CMP2BUF;
+	}
+	
+	//TODO EDIT THIS ONE		
+	PORTD.DIR = 0xFF;								//Sets port as output so the waveform function can be output
+}
+
+
+void TCA1_CMP_INIT(){
+	if(PWM_CTRL.CMP_CTRL & 0b00010000){				//Enable 'compare and enable flag'(CMPn) in CTRLB register therefore enabling PWM generation.
+		TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP0BUF;
+	}
+	
+	if(PWM_CTRL.CMP_CTRL & 0b00100000){
+		TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP1BUF;
+	}
+	
+	if(PWM_CTRL.CMP_CTRL & 0b01000000){
+		TCA1.SINGLE.CTRLB |= TCA1_SINGLE_CMP2BUF;
+	}
+	//TODO EDIT THIS
+	PORTC.DIR = 0xFF;								//Sets port as output so the waveform function can be output
+	
+}
+
+/*
+INTERRUPTS
+########################################################################################################
+*/
+
+//TODO : change so it differentiates between interrupt type.
+
+ISR(TCB0_INT_vect){
+	
+	PWM_CTRL.TCB0_OVF_INT_fp();
+	
+	PWM_CTRL.TCB0_CAPT_INT_fp();
+	
+	//Clears both interrupts
+	TCB0.INTFLAGS |= 0b00000011;
+}
+
+ISR(TCA0_OVF_vect){
+		
+	PWM_CTRL.TCA0_OVF_INT_fp();	
+	
+	TCA0.SINGLE.INTFLAGS = 0b00000001;
+}
+
+ISR(TCA0_CMP0_vect){
+	
+	PWM_CTRL.TCA0_CMP0_INT_fp();
+	
+	TCA0.SINGLE.INTFLAGS = 0b00010000;
+	
+}
+
+ISR(TCA0_CMP1_vect){
+	
+	PWM_CTRL.TCA0_CMP1_INT_fp();
+	
+	TCA0.SINGLE.INTFLAGS = 0b00100000;
+}
+
+ISR(TCA0_CMP2_vect){
+
+	PWM_CTRL.TCA0_CMP2_INT_fp();
+	
+	TCA0.SINGLE.INTFLAGS = 0b01000000;
 }
